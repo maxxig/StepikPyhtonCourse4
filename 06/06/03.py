@@ -1,15 +1,22 @@
 from contextlib import contextmanager
 @contextmanager
 def safe_write(filename):
-    # file_old = open(filename, mode='r', encoding='utf-8')
-    file = open(filename, mode='w+', encoding='utf-8')
-    text_backup = file.readlines()
+    try:
+        file_old = open(filename, mode='r', encoding='utf-8')
+        text_backup = file_old.readlines()
+        file_old.close()
+    except:
+        pass
+    file = open(filename, mode='w', encoding='utf-8')
     try:
         yield file
     except Exception as error:
-        print(f'Во время записи в файл было возбуждено исключение {error}')
-        file.write(text_backup)
-    file.close()
+        print(f'Во время записи в файл было возбуждено исключение {type(error).__name__}')
+        file.close()
+        file = open(filename, mode='w', encoding='utf-8')
+        file.write(''.join(text_backup))
+    finally:
+        file.close()
 
 
 with safe_write('under_tale.txt') as file:
