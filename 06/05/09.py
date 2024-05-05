@@ -13,20 +13,26 @@ class Atomic:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is None:
-            self.data[:] = self._backup_data
+            if isinstance(self.data, list):
+                self.data[:] = self._backup_data
+            elif isinstance(self.data, dict|set):
+                self.data.clear()
+                self.data.update(self._backup_data)
         return True
 
 
-# TEST_5:
-numbers = {1, 2, 3, 4, 5}
+# TEST_7:
+data = {'a': 100, 'z': 333, 'b': 200, 'c': 300, 'd': 45, 'e': 98, 't': 76, 'q': 34, 'f': 90, 'm': 230}
 
-with Atomic(numbers) as atomic:
-    atomic.add(6)
-    atomic.append(7)           # добавление элемента с помощью несуществующего метода
+with Atomic(data) as atomic:
+    atomic['e'] += 2   # изменение структуры
 
-print(sorted(numbers))
+print(data)
 
-with Atomic(numbers) as atomic:
-    atomic.add(6)
+# TEST_8:
+matrix = [[1, 2], [3, 4]]
 
-print(sorted(numbers))
+with Atomic(matrix, True) as atomic:
+    atomic[1].append(0)
+
+print(matrix)
